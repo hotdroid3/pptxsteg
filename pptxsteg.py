@@ -371,3 +371,5 @@ if __name__ == '__main__':
 ##check compression if working
 
 ##do gui
+
+##separate into modules

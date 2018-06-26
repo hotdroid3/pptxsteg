@@ -1,95 +1,6 @@
 from pptx import Presentation
-# import pptx
 import lzma
 import math
-
-class EncoderDecoder():
-	"""Contains static methods for encoding and decoding"""
-	def __init__(self):
-		super().__init__()
-
-	@staticmethod
-	def encode_from_file(file_name):
-		"""Receives the name of a file containing steganograms,
-		compresses the bytes of the file,
-		and then converts each compressed byte of the file into a hex string 
-		and returns a list of hex strings representing the file.
-		"""
-		try:
-			with open(file_name, 'rb') as secret_file:
-				secret_file_bytes = secret_file.read()
-				try:
-					secret_file_bytes_compressed = CompressorDecompressor.compress(secret_file_bytes)
-				except lzma.LZMAError as err:
-					print(err)
-					secret_file_bytes = b"".join([secret_file_bytes, b'n'])
-				else:
-					secret_file_bytes = b"".join([secret_file_bytes_compressed, b'c'])
-				hex_strings = [secret_file_bytes[i:i+1].hex() for i in range(0, len(secret_file_bytes))]
-		except FileNotFoundError:
-			print("FileNotFoundError: Please enter a proper file name!")
-			return None
-		return hex_strings
-
-	@staticmethod
-	def decode_to_file(hex_strings, file_name):
-		"""Receives a list of hex strings; each hex string in the list is converted into a byte,
-		the list of bytes are then concatenated into a single bytes object;
-		checks if the bytes were compressed; if compressed, bytes are decompressed, if not,
-		the bytes are not decompressed; the bytes object is then written to file_name.
-		"""
-		compressed = False
-		if hex_strings[-1] == '63':
-			del hex_strings[-1]
-			compressed = True
-		elif hex_strings[-1] == '6e':
-			del hex_strings[-1]
-			compressed = False
-
-		secret_file_bytes = [bytes.fromhex(hex_str) for hex_str in hex_strings]
-		secret_file_bytes = b"".join(secret_file_bytes)
-
-		if compressed:
-			secret_file_bytes = CompressorDecompressor.decompress(secret_file_bytes)
-
-		with open(file_name, 'wb') as secret_file:
-			secret_file.write(secret_file_bytes)
-
-	@staticmethod
-	def encode_from_string(secret_string):
-		"""Receives secret_string and returns a list of hex strings,
-		with each hex string representing a character in the original secret_string.
-		"""
-		hex_strings = [char.encode().hex() for char in secret_string]
-		return hex_strings
-
-	@staticmethod
-	def decode_to_string(hex_strings):
-		"""Receives a list of hex strings, converts each hex string into the character that it represents,
-		concatenates all the characters together to form the steganographic string.
-		"""
-		secret_string = [(bytes.fromhex(hex_str)).decode() for hex_str in hex_strings]
-		secret_string = "".join(secret_string)
-		return secret_string
-
-class CompressorDecompressor():
-	"""Wrapper class for LZMA compression and decompression methods"""
-	def __init__(self):
-		super().__init__()
-
-	@staticmethod
-	def compress(byte_object):
-		result = lzma.compress(byte_object, preset = 9)
-		if len(result) > len(byte_object):
-			raise lzma.LZMAError('LZMAError: compressed object larger than original object, using original object instead!')
-		else:
-			print(len(result))
-			print(len(byte_object))
-			return result
-
-	@staticmethod
-	def decompress(byte_object):
-		return lzma.decompress(byte_object)
 
 class EmbedExtract():
 	"""docstring for EmbedExtract"""
@@ -328,6 +239,15 @@ if __name__ == '__main__':
 	main()
 
 
+##coreproperties -
+##check font size property -
+
+##shape.name 1641 -
+
+##find out how big file size to determine how much space should go into the shape.name
+
+##remember to catch FileNotFoundError, catch FileNameTooLong when calling encode_from_file
+
 
 #count_num_of_usable_shapes compare with count num of shapes
 
@@ -343,28 +263,14 @@ if __name__ == '__main__':
 ##if compress, last char is c
 ##if not compressed, last char is n
 
-##simplify shorter code
- 
-##remember filename 
-
-##create new class for compression error
-
 ##extract and straight run exe?
 
 
-##shape.rotation - precision is not good enough
 
-##coreproperties -
-
-##check font size property
-
-##shape.name 1641 -
-
-##find out how big file size to determine how much space should go into the shape.name
 
 ##encryption and authenticity
 
-##test the insufficientcapacityerror - done
+
 
 ##print compression savings, test compression savings
 
@@ -373,3 +279,20 @@ if __name__ == '__main__':
 ##do gui
 
 ##separate into modules
+
+
+
+
+
+
+
+##remember filename - done
+
+##shape.rotation - precision is not good enough - done
+
+##create new class for compression error - done
+
+##test custom error handling classes
+	##CompressionError - done
+	##FileNameTooLongError - done
+	##InsufficientCapacityError - ?

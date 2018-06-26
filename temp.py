@@ -45,7 +45,7 @@
 				# shape.left = left
 				# shape.top = top
 				# shape.width = width
-				# shape.height = heigh
+				# shape.height = height
 
 
 				

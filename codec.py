@@ -72,11 +72,11 @@ class EncoderDecoder():
 		file_name_length = int.from_bytes(secret_file_bytes[-1:], byteorder = 'big')
 		file_name_length += 1
 
-		file_name = secret_file_bytes[(len(secret_file_bytes) - 1 - file_name_length):-1]
-
+		file_name_partition = (len(secret_file_bytes) - 1 - file_name_length), -1
+		file_name = secret_file_bytes[file_name_partition[0]:file_name_partition[1]]
 		file_name = file_name.decode()
 
-		secret_file_bytes = secret_file_bytes[0: (len(secret_file_bytes) - 1 - file_name_length)]
+		secret_file_bytes = secret_file_bytes[0: file_name_partition[0]]
 
 		with open(file_name, 'wb') as secret_file:
 			secret_file.write(secret_file_bytes)
@@ -84,7 +84,7 @@ class EncoderDecoder():
 	@staticmethod
 	def encode_from_string(secret_string):
 		"""Receives secret_string and returns a list of hex strings,
-		with each hex string representing a character in the original secret_string.
+		with each hex string representing and character in the original secret_string.
 		"""
 		hex_strings = [char.encode().hex() for char in secret_string]
 		return hex_strings
@@ -95,7 +95,7 @@ class EncoderDecoder():
 		concatenates all the characters together to form the steganographic string.
 		"""
 		secret_string = [(bytes.fromhex(hex_str)).decode() for hex_str in hex_strings]
-		secret_string = "".join(secret_string)
+		secret_string = ''.join(secret_string)
 		return secret_string
 
 class Error(Exception):

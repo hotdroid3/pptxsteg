@@ -36,7 +36,3 @@ class CompressionError(Error):
 		uncompressed_bytes_length = 'Uncompressed Bytes Length: {} bytes\n'.format(self.uncompressed_bytes_length)
 		compressed_bytes_length = 'Compressed Bytes Length: {} bytes'.format(self.compressed_bytes_length)	
 		return error_message + uncompressed_bytes_length + compressed_bytes_length
-
-
-
-# 'LZMAError: '

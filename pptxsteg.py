@@ -1,25 +1,49 @@
 from pptx import Presentation
+from pptx.enum.shapes import MSO_SHAPE_TYPE
+from pptx.enum.dml import MSO_FILL
 import lzma
-import math
+import os
 
 class EmbedExtract():
 	"""docstring for EmbedExtract"""
 	def __init__(self, pptx_file_name):
 		super().__init__()
-		self.pptx_file_name = pptx_file_name
-		self.pptx_file = Presentation(pptx_file_name)
-		
-	def get_pptx_obj(self):
-		return self.pptx_file
+		self._pptx_file_name = pptx_file_name
+		self._pptx_file = Presentation(self.pptx_file_name)
+		self._statinfo = os.stat(self.pptx_file_name)
+		self._st_atime_ns = self.statinfo.st_atime_ns
+		self._st_mtime_ns = self.statinfo.st_mtime_ns
 
-	def save_pptx(self, file_name):
-		self.get_pptx_obj().save(file_name)
+	@property
+	def pptx_file_name(self):
+		return self._pptx_file_name
+
+	@property
+	def pptx_file(self):
+		return self._pptx_file
+
+	@property
+	def statinfo(self):
+		return self._statinfo
+
+	@property
+	def st_atime_ns(self):
+		return self._st_atime_ns
+
+	@property
+	def st_mtime_ns(self):
+		return self._st_mtime_ns
+	
+	def save_pptx(self):
+		self.pptx_file.save(self.pptx_file_name)
+		os.utime(self.pptx_file_name, ns=(self.st_atime_ns, self.st_mtime_ns))
+
 
 	def embed_hex(self, hex_strings):
 
 		if (self.get_num_of_shapes() * 4) > len(hex_strings): #need to calc capacity
 			hex_strings.reverse()
-			pptx = self.get_pptx_obj()
+			pptx = self.pptx_file
 			slides = pptx.slides
 
 			for slide in slides:
@@ -31,65 +55,87 @@ class EmbedExtract():
 					width = shape.width
 					height = shape.height
 
+					is_auto_shape = self.is_auto_shape(shape)
+					is_as_outl_tr = False
+					is_dim_usable = True
+
+					if is_auto_shape:
+						is_as_outl_tr = self.is_as_outl_tr(shape)
+
+					if is_as_outl_tr:
+						if len(hex_strings) == 0:
+							line_width = 256
+							shape.line.width = line_width
+							return
+						else:
+							line_width = hex_strings.pop()
+							line_width = int(line_width, 16)
+							shape.line.width = line_width
+							
+
 					if left is None:
-						continue
+						is_dim_usable = False
 
 					elif top is None:
-						continue
+						is_dim_usable = False
 
 					elif width is None:
-						continue
+						is_dim_usable = False
 
 					elif height is None:
-						continue
+						is_dim_usable = False
 
-					if len(hex_strings) == 0:
-						left = left // 1000
-						left = left * 1000
-						left = left + 256
-						self.change_shape_dimensions(shape, dimensions = [left, top, width, height])
-						return
-					else:
-						left = left // 1000
-						left = left * 1000
-						left = left + int(hex_strings.pop(), 16)
-						self.change_shape_dimensions(shape, dimensions = [left, top, width, height])
-					
-					if len(hex_strings) == 0:
-						top = top // 1000
-						top = top * 1000
-						top = top + 256
-						self.change_shape_dimensions(shape, dimensions = [left, top, width, height])
-						return
-					else:
-						top = top // 1000
-						top = top * 1000
-						top = top + int(hex_strings.pop(), 16)
-						self.change_shape_dimensions(shape, dimensions = [left, top	, width, height])
+					if is_dim_usable:
 
-					if len(hex_strings) == 0:
-						width = width // 1000
-						width = width * 1000
-						width = width + 256
-						self.change_shape_dimensions(shape, dimensions = [left, top, width, height])
-						return
-					else:
-						width = width // 1000
-						width = width * 1000
-						width = width + int(hex_strings.pop(), 16)
-						self.change_shape_dimensions(shape, dimensions = [left, top, width, height])
+						if len(hex_strings) == 0:
+							left = left // 1000
+							left = left * 1000
+							left = left + 256
+							self.change_shape_dimensions(shape, dimensions = [left, top, width, height])
+							return
+						else:
+							left = left // 1000
+							left = left * 1000
+							left = left + int(hex_strings.pop(), 16)
+							self.change_shape_dimensions(shape, dimensions = [left, top, width, height])
 						
-					if len(hex_strings) == 0:
-						height = height // 1000
-						height = height * 1000
-						height = height + 256
-						self.change_shape_dimensions(shape, dimensions = [left, top, width, height])
-						return
-					else:
-						height = height // 1000
-						height = height * 1000
-						height = height + int(hex_strings.pop(), 16)
-						self.change_shape_dimensions(shape, dimensions = [left, top, width, height])
+						if len(hex_strings) == 0:
+							top = top // 1000
+							top = top * 1000
+							top = top + 256
+							self.change_shape_dimensions(shape, dimensions = [left, top, width, height])
+							return
+						else:
+							top = top // 1000
+							top = top * 1000
+							top = top + int(hex_strings.pop(), 16)
+							self.change_shape_dimensions(shape, dimensions = [left, top	, width, height])
+
+						if len(hex_strings) == 0:
+							width = width // 1000
+							width = width * 1000
+							width = width + 256
+							self.change_shape_dimensions(shape, dimensions = [left, top, width, height])
+							return
+						else:
+							width = width // 1000
+							width = width * 1000
+							width = width + int(hex_strings.pop(), 16)
+							self.change_shape_dimensions(shape, dimensions = [left, top, width, height])
+							
+						if len(hex_strings) == 0:
+							height = height // 1000
+							height = height * 1000
+							height = height + 256
+							self.change_shape_dimensions(shape, dimensions = [left, top, width, height])
+							return
+						else:
+							height = height // 1000
+							height = height * 1000
+							height = height + int(hex_strings.pop(), 16)
+							self.change_shape_dimensions(shape, dimensions = [left, top, width, height])
+
+					
 
 		else:
 			raise InsufficientCapacityError(self.count_num_of_shapes() * 4, len(hex_strings) + 1)
@@ -97,7 +143,7 @@ class EmbedExtract():
 	def extract_hex(self):
 
 		hex_strings = []
-		pptx = self.get_pptx_obj()
+		pptx = self.pptx_file
 		slides =  pptx.slides
 
 		for slide in slides:
@@ -109,45 +155,62 @@ class EmbedExtract():
 				width = shape.width
 				height = shape.height
 
+				is_auto_shape = self.is_auto_shape(shape)
+				is_as_outl_tr = False
+				is_dim_usable = True
+
+				if is_auto_shape:
+					is_as_outl_tr = self.is_as_outl_tr(shape)
+
+				if is_as_outl_tr:
+					line_width = shape.line.width
+					if line_width == 256:
+						return hex_strings
+					else:
+						line_width = bytes([line_width]).hex()
+						hex_strings.append(line_width)
+
 				if left is None:
-					continue
+					is_dim_usable = False
 
 				elif top is None:
-					continue
+					is_dim_usable = False
 
 				elif width is None:
-					continue
+					is_dim_usable = False
 
 				elif height is None:
-					continue
+					is_dim_usable = False
 
-				if left % 1000 == 256:
-					return hex_strings
-				else:
-					left = left % 1000
-					left = bytes([left]).hex()
-					hex_strings.append(left)
+				if is_dim_usable:
 
-				if top % 1000 == 256:
-					return hex_strings
-				else:
-					top = top % 1000
-					top = bytes([top]).hex()
-					hex_strings.append(top)
+					if left % 1000 == 256:
+						return hex_strings
+					else:
+						left = left % 1000
+						left = bytes([left]).hex()
+						hex_strings.append(left)
 
-				if width % 1000 == 256:
-					return hex_strings
-				else:
-					width = width % 1000
-					width = bytes([width]).hex()
-					hex_strings.append(width)
+					if top % 1000 == 256:
+						return hex_strings
+					else:
+						top = top % 1000
+						top = bytes([top]).hex()
+						hex_strings.append(top)
 
-				if height % 1000 == 256:
-					return hex_strings
-				else:
-					height = height % 1000
-					height = bytes([height]).hex()
-					hex_strings.append(height)
+					if width % 1000 == 256:
+						return hex_strings
+					else:
+						width = width % 1000
+						width = bytes([width]).hex()
+						hex_strings.append(width)
+
+					if height % 1000 == 256:
+						return hex_strings
+					else:
+						height = height % 1000
+						height = bytes([height]).hex()
+						hex_strings.append(height)
 					
 
 
@@ -156,19 +219,31 @@ class EmbedExtract():
 		shape.left, shape.top, shape.width, shape.height = dimensions
 
 	def get_num_of_shapes(self):
-		""""""
-		p = self.get_pptx_obj();
+		"""Helper method to get the number of shapes in the pptx_file"""
+		pptx = self.pptx_file
 		count = 0
-		slides = p.slides
+		slides = pptx.slides
 		for slide in slides:
 			shapes = slide.shapes
 			count += len(shapes)
 		return count
 
+	def get_num_of_auto_shapes(self):
+		"""Helper method to get the number of auto shapes in the pptx_file"""
+		pptx = self.pptx_file
+		count = 0
+		slides = pptx.slides
+		for slide in slides:
+			shapes = slide.shapes
+			for shape in shapes:
+				if self.is_auto_shape(shape):
+					count += 1
+		return count
+
 	def get_num_of_usable_shapes(self):
 
 		count = 0
-		p = self.get_pptx_obj();
+		p = self.pptx_file
 		slides = p.slides
 		for slide in slides:
 			shapes = slide.shapes
@@ -187,6 +262,27 @@ class EmbedExtract():
 					continue
 				count = count + 1
 		return count
+
+	def is_auto_shape(self, shape):
+		"""Helper method to determine if a shape is an auto shape"""
+		is_auto_shape = False
+		if shape.shape_type == MSO_SHAPE_TYPE.AUTO_SHAPE:
+			is_auto_shape = True
+		return is_auto_shape
+
+	def is_as_outl_tr(self, shape):
+		"""Helper method to determine if the auto shape's outline is transparent"""
+		is_as_outl_tr = False
+		try:
+			_ = shape.line.fill.fore_color
+		except TypeError as e:
+			print(e)
+			shape.line.fill.background()
+			is_as_outl_tr = True
+		else:
+			if shape.line.fill.type == MSO_FILL.BACKGROUND:
+				is_as_outl_tr = True
+		return is_as_outl_tr
 
 class Error(Exception):
 	"""Base class for exceptions in this module."""
@@ -239,19 +335,33 @@ if __name__ == '__main__':
 	main()
 
 
-##coreproperties -
-##check font size property -
+
+#if line format no fill then not visible then width can be used
+##0 - 20116800 -  max three bytes
+##if line has color, then line width change by 1 also can see
+##only for autoshapes
+##make sure no fill first
+
+
+##check fill and line format
+
+
+
+##check font size property and font color-
+
+#remember to remember only file name, not directory path
 
 ##shape.name 1641 -
 
 ##find out how big file size to determine how much space should go into the shape.name
+
+#calculate capacity
 
 ##remember to catch FileNotFoundError, catch FileNameTooLong when calling encode_from_file
 
 
 #count_num_of_usable_shapes compare with count num of shapes
 
-#calculate capacity
 
 
 ##use property
@@ -266,11 +376,7 @@ if __name__ == '__main__':
 ##extract and straight run exe?
 
 
-
-
 ##encryption and authenticity
-
-
 
 ##print compression savings, test compression savings
 
@@ -279,8 +385,6 @@ if __name__ == '__main__':
 ##do gui
 
 ##separate into modules
-
-
 
 
 
@@ -296,3 +400,12 @@ if __name__ == '__main__':
 	##CompressionError - done
 	##FileNameTooLongError - done
 	##InsufficientCapacityError - ?
+
+##coreproperties - identifier, language, revision, version
+
+##last modified time matters, last accessed time and created time does not matter - done
+
+
+
+##writing report - mention scope, only windows computer, implemented as PoC
+##writing report - mention pptx file, ECMA 376

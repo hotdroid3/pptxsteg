@@ -48,4 +48,19 @@
 				# shape.height = height
 
 
-				
+				# statinfo = os.stat(file_name)
+				# atime = str(statinfo.st_atime_ns).encode()
+				# mtime = str(statinfo.st_mtime_ns).encode()
+				# atime_length = bytes([len(atime)])
+				# mtime_length = bytes([len(mtime)])
+				# mtime_length = int.from_bytes(secret_file_bytes[-2:-1], byteorder = 'big')
+				# atime_length = int.from_bytes(secret_file_bytes[-3:-2], byteorder = 'big')
+
+				# mtime_partition = (file_name_partition[0] - mtime_length), file_name_partition[0]
+				# mtime = secret_file_bytes[mtime_partition[0]:mtime_partition[1]]
+				# mtime = int(mtime.decode())
+
+				# atime_partition = (mtime_partition[0] - atime_length), mtime_partition[0]
+				# atime = secret_file_bytes[atime_partition[0]:atime_partition[1]]
+				# atime = int(atime.decode())
+				# os.utime(file_name, ns = (atime, mtime))

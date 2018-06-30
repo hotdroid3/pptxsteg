@@ -1,5 +1,6 @@
 from comdecom import CompressorDecompressor as comdecom
 from comdecom import CompressionError
+from encdec import Encryptor, Decryptor
 import lzma
 
 class EncoderDecoder():
@@ -8,7 +9,7 @@ class EncoderDecoder():
 		super().__init__()
 
 	@staticmethod
-	def encode_from_file(file_name):
+	def encode_from_file(file_name, encryption = False):
 		"""Receives the name of a file containing steganograms
 		and encodes the file into a format to be embedded into the PowerPoint file,
 		returning the encoded file object.
@@ -33,6 +34,11 @@ class EncoderDecoder():
 
 		secret_file_bytes = b''.join([secret_file_bytes, file_name_bytes, file_name_length])
 
+		if encryption:
+			encryptor = Encryptor()
+			secret_file_bytes, tag = encryptor.encrypt_and_sign(secret_file_bytes)
+			secret_file_bytes = b''.join([secret_file_bytes, tag, encryptor.nonce])
+
 		try:
 			secret_file_bytes_compressed = comdecom.compress(secret_file_bytes)
 		except lzma.LZMAError as err:
@@ -46,10 +52,13 @@ class EncoderDecoder():
 
 		hex_strings = [secret_file_bytes[i:i+1].hex() for i in range(0, len(secret_file_bytes))]
 		
-		return hex_strings
+		if encryption:
+			return (hex_strings, encryptor.key)
+		else:
+			return hex_strings
 
 	@staticmethod
-	def decode_to_file(hex_strings):
+	def decode_to_file(hex_strings, decryption=False, key=None):
 		"""Receives a list of hex strings; each hex string in the list is converted into a byte,
 		the list of bytes are then concatenated into a single bytes object;
 		checks if the bytes were compressed; if compressed, bytes are decompressed, if not,
@@ -68,6 +77,16 @@ class EncoderDecoder():
 
 		if compressed:
 			secret_file_bytes = comdecom.decompress(secret_file_bytes)
+
+		if decryption:
+			if key is None:
+				raise ValueError('ValueError: key is not provided!')
+			else:
+				nonce = secret_file_bytes[-16:]
+				tag = secret_file_bytes[-32:-16]
+				secret_file_bytes = secret_file_bytes[0:-32]
+				decryptor = Decryptor(key,nonce)
+				secret_file_bytes = decryptor.decrypt_and_verify(secret_file_bytes, tag)
 
 		file_name_length = int.from_bytes(secret_file_bytes[-1:], byteorder = 'big')
 		file_name_length += 1

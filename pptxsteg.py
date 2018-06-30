@@ -1,6 +1,7 @@
 from pptx import Presentation
 from pptx.enum.shapes import MSO_SHAPE_TYPE
 from pptx.enum.dml import MSO_FILL
+from pptx.util import Pt
 import lzma
 import os
 
@@ -13,6 +14,7 @@ class EmbedExtract():
 		self._statinfo = os.stat(self.pptx_file_name)
 		self._st_atime_ns = self.statinfo.st_atime_ns
 		self._st_mtime_ns = self.statinfo.st_mtime_ns
+		self._ori_st_size = self.statinfo.st_size
 
 	@property
 	def pptx_file_name(self):
@@ -33,15 +35,23 @@ class EmbedExtract():
 	@property
 	def st_mtime_ns(self):
 		return self._st_mtime_ns
-	
-	def save_pptx(self):
-		self.pptx_file.save(self.pptx_file_name)
-		os.utime(self.pptx_file_name, ns=(self.st_atime_ns, self.st_mtime_ns))
 
+	@property
+	def ori_st_size(self):
+		return self._ori_st_size
+	
+	
+	def save_pptx(self, file_name = None):
+		if file_name is None:
+			self.pptx_file.save(self.pptx_file_name)
+			os.utime(self.pptx_file_name, ns=(self.st_atime_ns, self.st_mtime_ns))
+		else:
+			self.pptx_file.save(file_name)
+		
 
 	def embed_hex(self, hex_strings):
 
-		if (self.get_num_of_shapes() * 4) > len(hex_strings): #need to calc capacity
+		if (self.calculate_capacity()) > len(hex_strings): #need to calc capacity
 			hex_strings.reverse()
 			pptx = self.pptx_file
 			slides = pptx.slides
@@ -58,6 +68,7 @@ class EmbedExtract():
 					is_auto_shape = self.is_auto_shape(shape)
 					is_as_outl_tr = False
 					is_dim_usable = True
+					has_text_frame = shape.has_text_frame
 
 					if is_auto_shape:
 						is_as_outl_tr = self.is_as_outl_tr(shape)
@@ -135,10 +146,43 @@ class EmbedExtract():
 							height = height + int(hex_strings.pop(), 16)
 							self.change_shape_dimensions(shape, dimensions = [left, top, width, height])
 
-					
+					if has_text_frame:
+						text_frame = shape.text_frame
+						first_paragraph = text_frame.paragraphs[0]
+						run = first_paragraph.add_run()
+						font = run.font
+						font.size = Pt(1)
+						font.fill.background()
+
+						if len(hex_strings) == 0:
+							text = '256'
+							run.text = text
+						elif len(hex_strings) >= 4000:
+							text = [hex_strings.pop() for i in range(0,4000)] #4000 to be decided later
+							# text = [bytes.fromhex(hex).decode() for hex in text]
+							text = ''.join(text)
+							run.text = text
+						elif len(hex_strings) < 4000:
+							hex_strings_length = len(hex_strings)
+							text = [hex_strings.pop() for i in range(0,hex_strings_length)]
+							# text = [bytes.fromhex(hex).decode() for hex in text]
+							text = ''.join(text)
+							run.text = text
+
+					if len(hex_strings) == 0:
+						shape.name = '256'
+					elif len(hex_strings) >= 4000:
+						text = [hex_strings.pop() for i in range(0,4000)] #4000 to be decided later
+						text = ''.join(text)
+						shape.name = text
+					elif len(hex_strings) < 4000:
+						hex_strings_length = len(hex_strings)
+						text = [hex_strings.pop() for i in range(0, hex_strings_length)]
+						text = ''.join(text)
+						shape.name = text
 
 		else:
-			raise InsufficientCapacityError(self.count_num_of_shapes() * 4, len(hex_strings) + 1)
+			raise InsufficientCapacityError(self.calculate_capacity(), len(hex_strings) + 1)
 
 	def extract_hex(self):
 
@@ -158,6 +202,7 @@ class EmbedExtract():
 				is_auto_shape = self.is_auto_shape(shape)
 				is_as_outl_tr = False
 				is_dim_usable = True
+				has_text_frame = shape.has_text_frame
 
 				if is_auto_shape:
 					is_as_outl_tr = self.is_as_outl_tr(shape)
@@ -211,12 +256,42 @@ class EmbedExtract():
 						height = height % 1000
 						height = bytes([height]).hex()
 						hex_strings.append(height)
-					
 
+				if has_text_frame:
+
+					text_frame = shape.text_frame
+					first_paragraph = text_frame.paragraphs[0]
+					run = first_paragraph.runs[-1]
+					text = run.text
+
+					if text == '256':
+						return hex_strings
+					else:
+						text = [text[i:i+2] for i in range(0, len(text), 2)]
+						hex_strings += text
+
+				text = shape.name
+				if text == '256':
+					return hex_strings
+				else:
+					text = [text[i:i+2] for i in range(0, len(text), 2)]
+					hex_strings += text
 
 	def change_shape_dimensions(self, shape, dimensions):
 		"""Helper method to change the shape dimensions"""
 		shape.left, shape.top, shape.width, shape.height = dimensions
+
+	def get_mod_st_size(self):
+		"""Helper method to get the size of the saved pptx_file"""
+		self.save_pptx('AB12EF34.pptx')
+		statinfo = os.stat('AB12EF34.pptx')
+		mod_st_size = statinfo.st_size
+		os.remove('AB12EF34.pptx')
+		return mod_st_size
+
+	def get_st_size_diff(self):
+		"""Helper method to get the difference between the size of the original pptx_file and the saved pptx_file."""
+		return self.ori_st_size - self.get_mod_st_size()
 
 	def get_num_of_shapes(self):
 		"""Helper method to get the number of shapes in the pptx_file"""
@@ -240,27 +315,36 @@ class EmbedExtract():
 					count += 1
 		return count
 
-	def get_num_of_usable_shapes(self):
-
+	def get_num_of_tr_outl(self):
+		"""Helper method to get the number of transparent auto shape outlines"""
+		pptx = self.pptx_file
 		count = 0
-		p = self.pptx_file
-		slides = p.slides
+		slides = pptx.slides
+		for slide in slides:
+			shapes = slide.shapes
+			for shape in shapes:
+				if self.is_auto_shape(shape):
+					if self.is_as_outl_tr(shape):
+						count += 1
+		return count
+
+	def get_num_of_dimensions(self):
+		"""Helper method to get the number of dimensions available for use"""
+		count = 0
+		pptx = self.pptx_file
+		slides = pptx.slides
 		for slide in slides:
 			shapes = slide.shapes
 			for shape in shapes:
 				if shape.left is None:
-					print(shape.left)
 					continue
 				elif shape.top is None:
-					print(shape.top)
 					continue
 				elif shape.width is None:
-					print(shape.width)
 					continue
 				elif shape.height is None:
-					print(shape.height)
 					continue
-				count = count + 1
+				count = count + 4
 		return count
 
 	def is_auto_shape(self, shape):
@@ -276,13 +360,30 @@ class EmbedExtract():
 		try:
 			_ = shape.line.fill.fore_color
 		except TypeError as e:
-			print(e)
+			# print(e)
 			shape.line.fill.background()
 			is_as_outl_tr = True
 		else:
 			if shape.line.fill.type == MSO_FILL.BACKGROUND:
 				is_as_outl_tr = True
 		return is_as_outl_tr
+
+	def get_num_of_text_frames(self):
+		"""Helper method to get the number of text frames in pptx_file"""
+		pptx = self.pptx_file
+		count = 0
+		slides = pptx.slides
+		for slide in slides:
+			shapes = slide.shapes
+			for shape in shapes:
+				if shape.has_text_frame:
+					count += 1
+		return count
+
+	def calculate_capacity(self):
+		"""Helper method to calculate the steganographic capacity of pptx_file"""
+		capacity = self.get_num_of_tr_outl() + self.get_num_of_dimensions() + ((self.get_st_size_diff() // 1024) * 4000)
+		return capacity
 
 class Error(Exception):
 	"""Base class for exceptions in this module."""
@@ -335,6 +436,11 @@ if __name__ == '__main__':
 	main()
 
 
+##find out how big file size to determine how much space should go into the shape.name
+
+#calculate capacity
+
+##coreproperties - identifier, language, revision, version
 
 #if line format no fill then not visible then width can be used
 ##0 - 20116800 -  max three bytes
@@ -342,41 +448,28 @@ if __name__ == '__main__':
 ##only for autoshapes
 ##make sure no fill first
 
-
 ##check fill and line format
-
-
 
 ##check font size property and font color-
 
-#remember to remember only file name, not directory path
-
 ##shape.name 1641 -
 
-##find out how big file size to determine how much space should go into the shape.name
+##notes slides
 
-#calculate capacity
+#remember to remember only file name, not directory path
 
 ##remember to catch FileNotFoundError, catch FileNameTooLong when calling encode_from_file
 
+##remember to catch ValueError when decoding to file
 
-#count_num_of_usable_shapes compare with count num of shapes
-
-
+##remember to catch InsufficientCapacityError
 
 ##use property
-
-
-##write exceptions for opening files
-##slide number and object that is giving problem
 
 ##if compress, last char is c
 ##if not compressed, last char is n
 
-##extract and straight run exe?
 
-
-##encryption and authenticity
 
 ##print compression savings, test compression savings
 
@@ -385,10 +478,6 @@ if __name__ == '__main__':
 ##do gui
 
 ##separate into modules
-
-
-
-
 
 ##remember filename - done
 
@@ -400,12 +489,11 @@ if __name__ == '__main__':
 	##CompressionError - done
 	##FileNameTooLongError - done
 	##InsufficientCapacityError - ?
-
-##coreproperties - identifier, language, revision, version
+	##write exceptions for opening files
 
 ##last modified time matters, last accessed time and created time does not matter - done
 
-
+##encryption and authenticity - done
 
 ##writing report - mention scope, only windows computer, implemented as PoC
 ##writing report - mention pptx file, ECMA 376

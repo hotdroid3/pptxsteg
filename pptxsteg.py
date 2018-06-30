@@ -43,8 +43,9 @@ class EmbedExtract():
 	
 	def save_pptx(self, file_name = None):
 		if file_name is None:
-			self.pptx_file.save(self.pptx_file_name)
-			os.utime(self.pptx_file_name, ns=(self.st_atime_ns, self.st_mtime_ns))
+			output_path = 'output\\' + os.path.basename(self.pptx_file_name)
+			self.pptx_file.save(output_path)
+			os.utime(output_path, ns=(self.st_atime_ns, self.st_mtime_ns))
 		else:
 			self.pptx_file.save(file_name)
 		

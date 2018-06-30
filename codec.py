@@ -2,6 +2,7 @@ from comdecom import CompressorDecompressor as comdecom
 from comdecom import CompressionError
 from encdec import Encryptor, Decryptor
 import lzma
+import os
 
 class EncoderDecoder():
 	"""Contains static methods for encoding and decoding"""
@@ -20,9 +21,9 @@ class EncoderDecoder():
 		if len(file_name) > 256:
 			raise FileNameTooLongError(len(file_name))
 		else:
-			file_name_bytes = [char.encode() for char in file_name]
+			file_name_bytes = [char.encode() for char in os.path.basename(file_name)]
 			file_name_bytes = b''.join(file_name_bytes)
-			file_name_length = len(file_name) - 1
+			file_name_length = len(os.path.basename(file_name)) - 1
 			file_name_length = bytes([file_name_length])
 
 		try:
@@ -97,7 +98,8 @@ class EncoderDecoder():
 
 		secret_file_bytes = secret_file_bytes[0: file_name_partition[0]]
 
-		with open(file_name, 'wb') as secret_file:
+		output_file_name = 'output\\' + os.path.basename(file_name) 
+		with open(output_file_name, 'wb') as secret_file:
 			secret_file.write(secret_file_bytes)
 
 	@staticmethod

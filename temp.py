@@ -1,6 +1,9 @@
 (self.get_num_of_shapes() * 4000) + (self.get_num_of_text_frames() * 4000)
 
 
+
+
+
 # try:
 # 	assert isinstance(shape, pptx.shapes.autoshape.Shape)
 # except AssertionError:

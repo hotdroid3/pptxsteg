@@ -404,38 +404,6 @@ class InsufficientCapacityError(Error):
 		req_steg_cap = 'Required Steganographic Capacity: {} bytes\n'.format(self.required_capacity)
 		return avail_steg_cap + req_steg_cap
 
-def main():
-	"""This is the main function.
-	If this module is executed as a script, execution will commence in this function.
-	"""
-	# codec = EncoderDecoder()
-	embed = EmbedExtract('testing.pptx')
-	hex_strings = embed.extract_hex()
-	EncoderDecoder.decode_to_file(hex_strings,'virus.py')
-	# hex_strings = EncoderDecoder.encode_from_file('stegpptx.py')
-	# embed.embed_hex(hex_strings)
-	# embed.save_pptx('testing.pptx')
-	# print(embed.count_num_of_shapes())
-	# print(embed.count_num_of_usable_shapes())
-	# hex_strings = EncoderDecoder.encode_from_file('123.zip')
-	# embed.embed_hex(hex_strings)
-	# embed.save_pptx('testing.pptx')
-	# print(embed.count_num_of_shapes() * 4)
-	# embedded = EmbedExtract('testing.pptx')
-	# hex_strings = embedded.extract_hex()
-	# EncoderDecoder.decode_to_file(hex_strings,'test.py')
-	# print(embed.count_num_of_shapes())
-	# embed.embed_hex('blabla')
-	# embed.save_pptx('test.pptx')
-	# hexstring = EncoderDecoder.encode_from_file('1.jpg')
-	# EncoderDecoder.decode_to_file(hexstring, '123.jpg')
-	# hex_str = EncoderDecoder.encode_from_string('hello world')
-	# print(EncoderDecoder.decode_to_string(hex_str))
-	# print(dir(pptx))
-
-if __name__ == '__main__':
-	main()
-
 
 ##find out how big file size to determine how much space should go into the shape.name
 

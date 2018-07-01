@@ -3,7 +3,7 @@ from tkinter import ttk
 from ttkthemes import ThemedStyle
 from tkinter import filedialog
 from tkinter import messagebox
-
+from pptx.exc import PackageNotFoundError
 from pptxsteg import EmbedExtract, InsufficientCapacityError
 from codec import EncoderDecoder, FileNameTooLongError
 
@@ -16,10 +16,11 @@ class MainGUI():
 		self.pptx_file = ''
 		self.embed_file = ''
 		self.key_file = ''
+		self.psc = ''
 		self.window = tk.ThemedTk()
 		self.window.title('PowerPoint Steganography Application')
 		self.window.geometry('1024x768')
-		self.window.set_theme('arc')
+		self.window.set_theme('plastik')
 
 		self.ch_pptx_lbl = ttk.Label(self.window, text='Choose Cover PowerPoint File: ') #  font=('Lucida Console', 12), width = 30
 		self.ch_pptx_lbl.grid(column=0, row=0, padx=130, pady=20)
@@ -33,11 +34,19 @@ class MainGUI():
 		self.pptx_file_lbl = ttk.Label(self.window, text=self.pptx_file) #  font=('Lucida Console', 12), width = 30
 		self.pptx_file_lbl.grid(column=1, row=1, padx=5, pady=5)
 
+		self.psc_lbl = ttk.Label(self.window, text='PowerPoint Steganographic Capacity: ') #  font=('Lucida Console', 12), width = 30
+		self.psc_lbl.grid(column=0, row=2, padx=130, pady=20)
+
+		self.psc_result = ttk.Label(self.window, text=self.psc) #  font=('Lucida Console', 12), width = 30
+		self.psc_result.grid(column=1, row=2, padx=5, pady=20)
+
 		self.embed_rad = ttk.Radiobutton(self.window, text='Embed', value=1, command=self.embed_rad_clicked)
-		self.embed_rad.grid(column=0, row=2, padx=130, pady=30)
+		self.embed_rad.grid(column=0, row=3, padx=130, pady=30)
+		self.embed_rad.grid_remove()
 
 		self.extract_rad = ttk.Radiobutton(self.window, text='Extract', value=2, command=self.extract_rad_clicked)
-		self.extract_rad.grid(column=1, row=2, padx=30, pady=30)
+		self.extract_rad.grid(column=1, row=3, padx=30, pady=30)
+		self.extract_rad.grid_remove()
 
 		
 		self.window.mainloop()
@@ -45,7 +54,26 @@ class MainGUI():
 
 	def browse_pptx_clicked(self):
 		self.pptx_file = filedialog.askopenfilename(filetypes=(('PowerPoint 2007 files', '*.pptx'),), initialdir=os.getcwd())
-		self.pptx_file_lbl.config(text=self.pptx_file)
+
+		try:
+			pptx_obj = EmbedExtract(self.pptx_file)
+		except PackageNotFoundError as e:
+			messagebox.showinfo('Error!','Selected PowerPoint file does not exist!')
+			self.pptx_file_lbl.config(text='')
+			self.psc_result.config(text='')
+		else:
+			self.pptx_file_lbl.config(text=self.pptx_file)
+
+			pptx_cap = str(pptx_obj.calculate_capacity()) + ' bytes'
+			self.psc_result.config(text=pptx_cap)
+
+			self.embed_rad.grid()
+			self.extract_rad.grid()
+
+
+
+
+			
 
 	def embed_rad_clicked(self):
 		EmbedGUI(self)
@@ -64,7 +92,7 @@ class EmbedGUI():
 		self.window = tk.ThemedTk()
 		self.window.title('PowerPoint Steganography Application')
 		self.window.geometry('1024x768')
-		self.window.set_theme('arc')
+		self.window.set_theme('plastik')
 
 
 		self.sel_emb_file = ttk.Label(self.window, text='Select File to Embed: ') #  font=('Lucida Console', 12), width = 30
@@ -128,7 +156,7 @@ class EmbedGUI():
 			try:
 				hex_strings = EncoderDecoder.encode_from_file(self.embed_file, encryption=self.encrypt)
 			except FileNameTooLongError as err:
-				messagebox.showinfo('Error', str(err))
+				messagebox.showinfo('Error!', str(err))
 			except FileNotFoundError as err:
 				messagebox.showinfo('Error!', str(err))
 			else:
@@ -137,32 +165,46 @@ class EmbedGUI():
 					keyfile.write(key)
 				messagebox.showinfo('Notification:','Your encryption key has been saved at: {}\\key.bin'.format(os.getcwd()))
 
-				embed_pptx = EmbedExtract(self.root.pptx_file)
 				try:
-					embed_pptx.embed_hex(hex_strings)
-				except InsufficientCapacityError as err:
-					messagebox.showinfo('Error!',str(err))
-				else:
-					embed_pptx.save_pptx()
-					messagebox.showinfo('Success!', 'Successfully embedded file into selected cover PowerPoint file!')
+					embed_pptx = EmbedExtract(self.root.pptx_file)
+				except PackageNotFoundError as e:
+					messagebox.showinfo('Error!','Selected PowerPoint file does not exist!')
 					self.window.destroy()
+				else:
+					try:
+						embed_pptx.embed_hex(hex_strings)
+					except InsufficientCapacityError as err:
+						messagebox.showinfo('Error!',str(err))
+						self.window.destroy()
+					else:
+						embed_pptx.save_pptx()
+						messagebox.showinfo('Success!', 'Successfully embedded file into selected cover PowerPoint file!')
+						self.window.destroy()
+				
+				
 		else:
 			try:
 				hex_strings = EncoderDecoder.encode_from_file(self.embed_file)
 			except FileNameTooLongError as err:
-				messagebox.showinfo('Error', str(err))
+				messagebox.showinfo('Error!', str(err))
 			except FileNotFoundError as err:
 				messagebox.showinfo('Error!', str(err))
 			else:
-				embed_pptx = EmbedExtract(self.root.pptx_file)
 				try:
-					embed_pptx.embed_hex(hex_strings)
-				except InsufficientCapacityError as err:
-					messagebox.showinfo('Error!',str(err))
-				else:
-					embed_pptx.save_pptx()
-					messagebox.showinfo('Success!', 'Successfully embedded file into selected cover PowerPoint file!')
+					embed_pptx = EmbedExtract(self.root.pptx_file)
+				except PackageNotFoundError as e:
+					messagebox.showinfo('Error!','Selected PowerPoint file does not exist!')
 					self.window.destroy()
+				else:
+					try:
+						embed_pptx.embed_hex(hex_strings)
+					except InsufficientCapacityError as err:
+						messagebox.showinfo('Error!',str(err))
+						self.window.destroy()
+					else:
+						embed_pptx.save_pptx()
+						messagebox.showinfo('Success!', 'Successfully embedded file into selected cover PowerPoint file!')
+						self.window.destroy()
 
 
 
@@ -176,7 +218,7 @@ class ExtractGUI():
 		self.window = tk.ThemedTk()
 		self.window.title('PowerPoint Steganography Application')
 		self.window.geometry('1024x768')
-		self.window.set_theme('arc')
+		self.window.set_theme('plastik')
 
 
 		self.dec_file_lbl = ttk.Label(self.window, text='Embedded file encrypted: ') #  font=('Lucida Console', 12), width = 30
@@ -235,31 +277,39 @@ class ExtractGUI():
 
 	def ext_btn_clicked(self):
 
-		extract_pptx = EmbedExtract(self.root.pptx_file)
-		hex_strings = extract_pptx.extract_hex()
-
-		if self.encrypt is None:
-			messagebox.showinfo('Error!','Please select whether embedded file was encrypted!')
-		elif self.encrypt:
-			
-			with open(self.key_file, 'rb') as keyfile:
-				key = keyfile.read()
-
-			try:
-				EncoderDecoder.decode_to_file(hex_strings, decryption=self.encrypt, key=key)
-			except ValueError as err:
-				messagebox.showinfo('Error', str(err))
-			else:
-				messagebox.showinfo('Success!', 'Successfully extracted hidden file from selected cover PowerPoint file!')
-				self.window.destroy()
+		try:
+			extract_pptx = EmbedExtract(self.root.pptx_file)
+		except PackageNotFoundError as e:
+			messagebox.showinfo('Error!', 'Selected PowerPoint file does not exist!')
+			self.window.destroy()
 		else:
-			try:
-				EncoderDecoder.decode_to_file(hex_strings)
-			except ValueError as err:
-				messagebox.showinfo('Error', str(err))
+			hex_strings = extract_pptx.extract_hex()
+
+			if self.encrypt is None:
+				messagebox.showinfo('Error!','Please select whether embedded file was encrypted!')
+			elif self.encrypt:
+				
+				with open(self.key_file, 'rb') as keyfile:
+					key = keyfile.read()
+
+				try:
+					EncoderDecoder.decode_to_file(hex_strings, decryption=self.encrypt, key=key)
+				except ValueError as err:
+					messagebox.showinfo('Error!', str(err))
+					self.window.destroy()
+				else:
+					messagebox.showinfo('Success!', 'Successfully extracted hidden file from selected cover PowerPoint file!')
+					self.window.destroy()
 			else:
-				messagebox.showinfo('Success!', 'Successfully extracted hidden file from selected cover PowerPoint file!')
-				self.window.destroy()
+				try:
+					EncoderDecoder.decode_to_file(hex_strings)
+				except ValueError as err:
+					messagebox.showinfo('Error!', str(err))
+					self.window.destroy()
+				else:
+					messagebox.showinfo('Success!', 'Successfully extracted hidden file from selected cover PowerPoint file!')
+					self.window.destroy()
+		
 
 
 

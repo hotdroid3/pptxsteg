@@ -384,6 +384,8 @@ class EmbedExtract():
 	def calculate_capacity(self):
 		"""Helper method to calculate the steganographic capacity of pptx_file"""
 		capacity = self.get_num_of_tr_outl() + self.get_num_of_dimensions() + ((self.get_st_size_diff() // 1024) * 4000)
+		if capacity < 0:
+			return 0
 		return capacity
 
 class Error(Exception):

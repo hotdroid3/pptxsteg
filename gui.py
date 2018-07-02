@@ -13,13 +13,17 @@ class MainGUI():
 	"""Graphical User Interface for PowerPoint Steganography Application"""
 	def __init__(self):
 		super().__init__()
+
+		if 'output' not in os.listdir(os.getcwd()):
+			os.mkdir('output')
+
 		self.pptx_file = ''
 		self.embed_file = ''
 		self.key_file = ''
 		self.psc = ''
 		self.window = tk.ThemedTk()
 		self.window.title('PowerPoint Steganography Application')
-		self.window.geometry('1024x768')
+		self.window.geometry('1366x768')
 		self.window.set_theme('plastik')
 
 		self.ch_pptx_lbl = ttk.Label(self.window, text='Choose Cover PowerPoint File: ') #  font=('Lucida Console', 12), width = 30
@@ -76,10 +80,16 @@ class MainGUI():
 			
 
 	def embed_rad_clicked(self):
-		EmbedGUI(self)
+		if self.pptx_file != '':
+			EmbedGUI(self)
+		else:
+			messagebox.showinfo('Error!','Selected PowerPoint file does not exist!')
 		
 	def extract_rad_clicked(self):
-		ExtractGUI(self)
+		if self.pptx_file != '':
+			ExtractGUI(self)
+		else:
+			messagebox.showinfo('Error!','Selected PowerPoint file does not exist!')
 
 
 class EmbedGUI():
@@ -91,7 +101,7 @@ class EmbedGUI():
 		self.encrypt = None
 		self.window = tk.ThemedTk()
 		self.window.title('PowerPoint Steganography Application')
-		self.window.geometry('1024x768')
+		self.window.geometry('1366x768')
 		self.window.set_theme('plastik')
 
 
@@ -217,7 +227,7 @@ class ExtractGUI():
 		self.encrypt = None
 		self.window = tk.ThemedTk()
 		self.window.title('PowerPoint Steganography Application')
-		self.window.geometry('1024x768')
+		self.window.geometry('1366x768')
 		self.window.set_theme('plastik')
 
 

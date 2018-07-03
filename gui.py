@@ -103,6 +103,7 @@ class EmbedGUI():
 		self.window.title('PowerPoint Steganography Application')
 		self.window.geometry('1366x768')
 		self.window.set_theme('plastik')
+		self.window.lift()
 
 
 		self.sel_emb_file = ttk.Label(self.window, text='Select File to Embed: ') #  font=('Lucida Console', 12), width = 30
@@ -152,6 +153,7 @@ class EmbedGUI():
 		self.enc_file_n.grid()
 
 		self.embed_btn.grid()
+		self.window.lift()
 
 	def enc_file_y(self):
 		self.encrypt = True
@@ -229,9 +231,10 @@ class ExtractGUI():
 		self.window.title('PowerPoint Steganography Application')
 		self.window.geometry('1366x768')
 		self.window.set_theme('plastik')
+		self.window.lift()
 
 
-		self.dec_file_lbl = ttk.Label(self.window, text='Embedded file encrypted: ') #  font=('Lucida Console', 12), width = 30
+		self.dec_file_lbl = ttk.Label(self.window, text='Is embedded file encrypted?') #  font=('Lucida Console', 12), width = 30
 		self.dec_file_lbl.grid(column=0, row=0, padx=130, pady=20)
 
 		self.dec_file_y = ttk.Radiobutton(self.window, text='Yes', value=1, command=self.dec_file_y)
@@ -283,7 +286,14 @@ class ExtractGUI():
 		self.k_file.grid()
 		self.k_file.config(text=self.key_file)
 
-		self.ext_btn.grid()
+
+		if self.key_file == '':
+			messagebox.showinfo('Error!','Selected key file does not exist!')
+			self.ext_btn.grid_remove()
+		else:
+			self.ext_btn.grid()
+
+		self.window.lift()
 
 	def ext_btn_clicked(self):
 
@@ -298,7 +308,7 @@ class ExtractGUI():
 			if self.encrypt is None:
 				messagebox.showinfo('Error!','Please select whether embedded file was encrypted!')
 			elif self.encrypt:
-				
+
 				with open(self.key_file, 'rb') as keyfile:
 					key = keyfile.read()
 
@@ -308,8 +318,9 @@ class ExtractGUI():
 					messagebox.showinfo('Error!', str(err))
 					self.window.destroy()
 				else:
-					messagebox.showinfo('Success!', 'Successfully extracted hidden file from selected cover PowerPoint file!')
+					messagebox.showinfo('Success!', 'Successfully extracted hidden file from selected cover PowerPoint file!\nHiddle file is saved in output folder.')
 					self.window.destroy()
+				
 			else:
 				try:
 					EncoderDecoder.decode_to_file(hex_strings)
@@ -317,7 +328,7 @@ class ExtractGUI():
 					messagebox.showinfo('Error!', str(err))
 					self.window.destroy()
 				else:
-					messagebox.showinfo('Success!', 'Successfully extracted hidden file from selected cover PowerPoint file!')
+					messagebox.showinfo('Success!', 'Successfully extracted hidden file from selected cover PowerPoint file!\nHiddle file is saved in output folder.')
 					self.window.destroy()
 		
 

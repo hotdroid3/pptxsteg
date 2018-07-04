@@ -6,7 +6,7 @@ import lzma
 import os
 
 class EmbedExtract():
-	"""docstring for EmbedExtract"""
+	"""A class that contains methods to embed and extract steganograms into a given cover PowerPoint file."""
 	def __init__(self, pptx_file_name):
 		super().__init__()
 		self._pptx_file_name = pptx_file_name
@@ -158,22 +158,22 @@ class EmbedExtract():
 						if len(hex_strings) == 0:
 							text = '256'
 							run.text = text
+							return
 						elif len(hex_strings) >= 4000:
-							text = [hex_strings.pop() for i in range(0,4000)] #4000 to be decided later
-							# text = [bytes.fromhex(hex).decode() for hex in text]
+							text = [hex_strings.pop() for i in range(0,4000)] 
 							text = ''.join(text)
 							run.text = text
 						elif len(hex_strings) < 4000:
 							hex_strings_length = len(hex_strings)
 							text = [hex_strings.pop() for i in range(0,hex_strings_length)]
-							# text = [bytes.fromhex(hex).decode() for hex in text]
 							text = ''.join(text)
 							run.text = text
 
 					if len(hex_strings) == 0:
 						shape.name = '256'
+						return
 					elif len(hex_strings) >= 4000:
-						text = [hex_strings.pop() for i in range(0,4000)] #4000 to be decided later
+						text = [hex_strings.pop() for i in range(0,4000)]
 						text = ''.join(text)
 						shape.name = text
 					elif len(hex_strings) < 4000:
@@ -405,66 +405,3 @@ class InsufficientCapacityError(Error):
 		avail_steg_cap = 'Available Steganographic Capacity: {} bytes\n'.format(self.steganographic_capacity)
 		req_steg_cap = 'Required Steganographic Capacity: {} bytes\n'.format(self.required_capacity)
 		return avail_steg_cap + req_steg_cap
-
-
-##find out how big file size to determine how much space should go into the shape.name
-
-#calculate capacity
-
-##coreproperties - identifier, language, revision, version
-
-#if line format no fill then not visible then width can be used
-##0 - 20116800 -  max three bytes
-##if line has color, then line width change by 1 also can see
-##only for autoshapes
-##make sure no fill first
-
-##check fill and line format
-
-##check font size property and font color-
-
-##shape.name 1641 -
-
-##notes slides
-
-#remember to remember only file name, not directory path
-
-##remember to catch FileNotFoundError, catch FileNameTooLong when calling encode_from_file
-
-##remember to catch ValueError when decoding to file
-
-##remember to catch InsufficientCapacityError
-
-##use property
-
-##if compress, last char is c
-##if not compressed, last char is n
-
-
-
-##print compression savings, test compression savings
-
-##check compression if working
-
-##do gui
-
-##separate into modules
-
-##remember filename - done
-
-##shape.rotation - precision is not good enough - done
-
-##create new class for compression error - done
-
-##test custom error handling classes
-	##CompressionError - done
-	##FileNameTooLongError - done
-	##InsufficientCapacityError - ?
-	##write exceptions for opening files
-
-##last modified time matters, last accessed time and created time does not matter - done
-
-##encryption and authenticity - done
-
-##writing report - mention scope, only windows computer, implemented as PoC
-##writing report - mention pptx file, ECMA 376

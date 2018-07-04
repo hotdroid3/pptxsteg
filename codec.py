@@ -63,7 +63,9 @@ class EncoderDecoder():
 		"""Receives a list of hex strings; each hex string in the list is converted into a byte,
 		the list of bytes are then concatenated into a single bytes object;
 		checks if the bytes were compressed; if compressed, bytes are decompressed, if not,
-		the bytes are not decompressed; the bytes object is then written to file_name.
+		the bytes are not decompressed; 
+		if the bytes were encrypted, bytes are decrypted,
+		the bytes object is then written to file_name.
 		"""
 		compressed = False
 		if hex_strings[-1] == '63':

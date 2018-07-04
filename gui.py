@@ -26,22 +26,22 @@ class MainGUI():
 		self.window.geometry('1366x768')
 		self.window.set_theme('plastik')
 
-		self.ch_pptx_lbl = ttk.Label(self.window, text='Choose Cover PowerPoint File: ') #  font=('Lucida Console', 12), width = 30
+		self.ch_pptx_lbl = ttk.Label(self.window, text='Choose Cover PowerPoint File: ') 
 		self.ch_pptx_lbl.grid(column=0, row=0, padx=130, pady=20)
 
-		self.browse_pptx_btn = ttk.Button(self.window, text='Browse', command=self.browse_pptx_clicked, takefocus=False)  # bg = ('#4e92df'), width = 10
+		self.browse_pptx_btn = ttk.Button(self.window, text='Browse', command=self.browse_pptx_clicked, takefocus=False)
 		self.browse_pptx_btn.grid(column=1, row=0, padx=5, pady=20)
 
-		self.se_pptx_lbl = ttk.Label(self.window, text='Selected PowerPoint File: ') #  font=('Lucida Console', 12), width = 30
+		self.se_pptx_lbl = ttk.Label(self.window, text='Selected PowerPoint File: ') 
 		self.se_pptx_lbl.grid(column=0, row=1, padx=130, pady=5)
 
-		self.pptx_file_lbl = ttk.Label(self.window, text=self.pptx_file) #  font=('Lucida Console', 12), width = 30
+		self.pptx_file_lbl = ttk.Label(self.window, text=self.pptx_file) 
 		self.pptx_file_lbl.grid(column=1, row=1, padx=5, pady=5)
 
-		self.psc_lbl = ttk.Label(self.window, text='PowerPoint Steganographic Capacity: ') #  font=('Lucida Console', 12), width = 30
+		self.psc_lbl = ttk.Label(self.window, text='PowerPoint Steganographic Capacity: ') 
 		self.psc_lbl.grid(column=0, row=2, padx=130, pady=20)
 
-		self.psc_result = ttk.Label(self.window, text=self.psc) #  font=('Lucida Console', 12), width = 30
+		self.psc_result = ttk.Label(self.window, text=self.psc) 
 		self.psc_result.grid(column=1, row=2, padx=5, pady=20)
 
 		self.embed_rad = ttk.Radiobutton(self.window, text='Embed', value=1, command=self.embed_rad_clicked)
@@ -73,10 +73,6 @@ class MainGUI():
 
 			self.embed_rad.grid()
 			self.extract_rad.grid()
-
-
-
-
 			
 
 	def embed_rad_clicked(self):
@@ -106,21 +102,21 @@ class EmbedGUI():
 		self.window.lift()
 
 
-		self.sel_emb_file = ttk.Label(self.window, text='Select File to Embed: ') #  font=('Lucida Console', 12), width = 30
+		self.sel_emb_file = ttk.Label(self.window, text='Select File to Embed: ') 
 		self.sel_emb_file.grid(column=0, row=0, padx=130, pady=20)
 
-		self.sel_emb_file_btn = ttk.Button(self.window, text='Browse', command=self.sel_emb_file_btn_clicked, takefocus=False)  # bg = ('#4e92df'), width = 10
+		self.sel_emb_file_btn = ttk.Button(self.window, text='Browse', command=self.sel_emb_file_btn_clicked, takefocus=False)
 		self.sel_emb_file_btn.grid(column=1, row=0, padx=30, pady=20)
 
-		self.em_file_lbl = ttk.Label(self.window, text='Selected File To Embed: ') #  font=('Lucida Console', 12), width = 30
+		self.em_file_lbl = ttk.Label(self.window, text='Selected File To Embed: ') 
 		self.em_file_lbl.grid(column=0, row=1, padx=130, pady=15)
 		self.em_file_lbl.grid_remove()
 
-		self.embed_file_lbl = ttk.Label(self.window, text=self.embed_file) #  font=('Lucida Console', 12), width = 30
+		self.embed_file_lbl = ttk.Label(self.window, text=self.embed_file) 
 		self.embed_file_lbl.grid(column=1, row=1, padx=30, pady=15)
 		self.embed_file_lbl.grid_remove()
 
-		self.enc_file_lbl = ttk.Label(self.window, text='Encrypt file: ') #  font=('Lucida Console', 12), width = 30
+		self.enc_file_lbl = ttk.Label(self.window, text='Encrypt file: ') 
 		self.enc_file_lbl.grid(column=0, row=2, padx=0, pady=15)
 		self.enc_file_lbl.grid_remove()
 
@@ -132,7 +128,7 @@ class EmbedGUI():
 		self.enc_file_n.grid(column=2, row=2, padx=0, pady=15)
 		self.enc_file_n.grid_remove()
 
-		self.embed_btn = ttk.Button(self.window, text='Embed', command=self.embed_btn_clicked, takefocus=False)  # bg = ('#4e92df'), width = 10
+		self.embed_btn = ttk.Button(self.window, text='Embed', command=self.embed_btn_clicked, takefocus=False)
 		self.embed_btn.grid(column=2, row=3, padx=0, pady=15)
 		self.embed_btn.grid_remove()
 
@@ -234,7 +230,7 @@ class ExtractGUI():
 		self.window.lift()
 
 
-		self.dec_file_lbl = ttk.Label(self.window, text='Is embedded file encrypted?') #  font=('Lucida Console', 12), width = 30
+		self.dec_file_lbl = ttk.Label(self.window, text='Is embedded file encrypted?') 
 		self.dec_file_lbl.grid(column=0, row=0, padx=130, pady=20)
 
 		self.dec_file_y = ttk.Radiobutton(self.window, text='Yes', value=1, command=self.dec_file_y)
@@ -243,23 +239,23 @@ class ExtractGUI():
 		self.dec_file_n = ttk.Radiobutton(self.window, text='No', value=2, command=self.dec_file_n)
 		self.dec_file_n.grid(column=2, row=0, padx=0, pady=20)
 
-		self.sel_key_file = ttk.Label(self.window, text='Select Encryption Key File: ') #  font=('Lucida Console', 12), width = 30
+		self.sel_key_file = ttk.Label(self.window, text='Select Encryption Key File: ') 
 		self.sel_key_file.grid(column=0, row=1, padx=130, pady=15)
 		self.sel_key_file.grid_remove()
 
-		self.sel_key_file_btn = ttk.Button(self.window, text='Browse', command=self.sel_key_file_btn_clicked, takefocus=False)  # bg = ('#4e92df'), width = 10
+		self.sel_key_file_btn = ttk.Button(self.window, text='Browse', command=self.sel_key_file_btn_clicked, takefocus=False)
 		self.sel_key_file_btn.grid(column=1, row=1, padx=30, pady=15)
 		self.sel_key_file_btn.grid_remove()
 
-		self.key_file_lbl = ttk.Label(self.window, text='Selected Key File: ') #  font=('Lucida Console', 12), width = 30
+		self.key_file_lbl = ttk.Label(self.window, text='Selected Key File: ') 
 		self.key_file_lbl.grid(column=0, row=2, padx=130, pady=15)
 		self.key_file_lbl.grid_remove()
 
-		self.k_file = ttk.Label(self.window, text=self.key_file) #  font=('Lucida Console', 12), width = 30
+		self.k_file = ttk.Label(self.window, text=self.key_file) 
 		self.k_file.grid(column=1, row=2, padx=30, pady=15)
 		self.k_file.grid_remove()
 
-		self.ext_btn = ttk.Button(self.window, text='Extract', command=self.ext_btn_clicked, takefocus=False)  # bg = ('#4e92df'), width = 10
+		self.ext_btn = ttk.Button(self.window, text='Extract', command=self.ext_btn_clicked, takefocus=False)
 		self.ext_btn.grid(column=2, row=3, padx=0, pady=15)
 		self.ext_btn.grid_remove()
 
@@ -290,6 +286,7 @@ class ExtractGUI():
 		if self.key_file == '':
 			messagebox.showinfo('Error!','Selected key file does not exist!')
 			self.ext_btn.grid_remove()
+			self.window.lift()
 		else:
 			self.ext_btn.grid()
 
@@ -317,7 +314,7 @@ class ExtractGUI():
 				except ValueError as err:
 					messagebox.showinfo('Error!', str(err))
 					self.window.destroy()
-				else:
+				
 					messagebox.showinfo('Success!', 'Successfully extracted hidden file from selected cover PowerPoint file!\nHiddle file is saved in output folder.')
 					self.window.destroy()
 				
@@ -330,11 +327,6 @@ class ExtractGUI():
 				else:
 					messagebox.showinfo('Success!', 'Successfully extracted hidden file from selected cover PowerPoint file!\nHiddle file is saved in output folder.')
 					self.window.destroy()
-		
-
-
-
-
 
 def main():
 	"""This is the main function.

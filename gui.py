@@ -217,7 +217,7 @@ class EmbedGUI():
 
 
 class ExtractGUI():
-	"""GUI for embedding steganograms"""
+	"""GUI for extracting steganograms"""
 	def __init__(self, root):
 		super().__init__()
 		self.root = root

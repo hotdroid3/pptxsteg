@@ -12,8 +12,6 @@ class CompressorDecompressor():
 		if len(result) > len(byte_object):
 			raise CompressionError(len(result), len(byte_object))
 		else:
-			# print(len(result))
-			# print(len(byte_object))
 			return result
 
 	@staticmethod

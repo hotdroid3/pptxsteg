@@ -52,7 +52,7 @@ class EmbedExtract():
 
 	def embed_hex(self, hex_strings):
 
-		if (self.calculate_capacity()) > len(hex_strings): #need to calc capacity
+		if (self.calculate_capacity()) > len(hex_strings):
 			hex_strings.reverse()
 			pptx = self.pptx_file
 			slides = pptx.slides
@@ -361,7 +361,6 @@ class EmbedExtract():
 		try:
 			_ = shape.line.fill.fore_color
 		except TypeError as e:
-			# print(e)
 			shape.line.fill.background()
 			is_as_outl_tr = True
 		else:

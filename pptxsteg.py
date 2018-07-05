@@ -404,3 +404,6 @@ class InsufficientCapacityError(Error):
 		avail_steg_cap = 'Available Steganographic Capacity: {} bytes\n'.format(self.steganographic_capacity)
 		req_steg_cap = 'Required Steganographic Capacity: {} bytes\n'.format(self.required_capacity)
 		return avail_steg_cap + req_steg_cap
+
+
+##notes slides
